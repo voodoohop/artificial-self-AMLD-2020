@@ -14,6 +14,8 @@ from transformers import (
     GPT2Tokenizer,
 )
 from train import set_seed
+import transformers as tr
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -94,7 +96,7 @@ def run():
         type=str,
         default="openai-gpt",
         help="Model type (openai-gpt or gpt2)",
-        choices=["openai-gpt", "gpt2"],
+        # choices=["openai-gpt", "gpt2"],
     )
     parser.add_argument(
         "--max_history",
@@ -148,13 +150,13 @@ def run():
 
     logger.info("Get pretrained model and tokenizer")
     model_path = os.path.join("runs", args.run_name)
-    tokenizer_class, model_class = (
-        (GPT2Tokenizer, GPT2LMHeadModel)
-        if args.model == "gpt2"
-        else (OpenAIGPTTokenizer, OpenAIGPTLMHeadModel)
-    )
-    tokenizer = tokenizer_class.from_pretrained(model_path)
-    model = model_class.from_pretrained(model_path)
+    # tokenizer_class, model_class = (
+    #     (GPT2Tokenizer, GPT2LMHeadModel)
+    #     if args.model == "gpt2"
+    #     else (OpenAIGPTTokenizer, OpenAIGPTLMHeadModel)
+    # )
+    tokenizer = tr.DistilBertTokenizer.from_pretrained(model_path)
+    model = tr.DistilBertTokenizer.from_pretrained(model_path)
     model.to(args.device)
     history = []
     personality = []
