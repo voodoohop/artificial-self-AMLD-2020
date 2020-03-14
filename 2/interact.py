@@ -146,17 +146,22 @@ def run():
     args = parser.parse_args()
 
     # set seed
-    set_seed(args)
+    set_seed(args.seed)
 
     logger.info("Get pretrained model and tokenizer")
     model_path = os.path.join("runs", args.run_name)
-    # tokenizer_class, model_class = (
-    #     (GPT2Tokenizer, GPT2LMHeadModel)
-    #     if args.model == "gpt2"
-    #     else (OpenAIGPTTokenizer, OpenAIGPTLMHeadModel)
-    # )
-    tokenizer = tr.DistilBertTokenizer.from_pretrained(model_path)
-    model = tr.DistilBertTokenizer.from_pretrained(model_path)
+
+    if args.model == "gpt2":
+        tokenizer_class, model_class = GPT2Tokenizer, GPT2LMHeadModel
+    elif args.model == "distilbert-base-multilingual-cased":
+        tokenizer_class, model_class = tr.DistilBertTokenizer, tr.DistilBertForMaskedLM
+    elif args.model == "bert-base-multilingual-cased":
+        tokenizer_class, model_class = tr.DistilBertTokenizer, tr.BertForMaskedLM
+    else:
+        tokenizer_class, model_class = OpenAIGPTTokenizer, OpenAIGPTLMHeadModel
+
+    tokenizer = tokenizer_class.from_pretrained(model_path)
+    model = model_class.from_pretrained(model_path)
     model.to(args.device)
     history = []
     personality = []
