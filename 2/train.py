@@ -37,7 +37,7 @@ class TextDataset(Dataset):
             args.data_path, speaker1_tag="<speaker2>", speaker2_tag="<speaker1>"
         )
         logger.info("Tokenizing and building input...")
-        tokenized_text = tokenizer.encode(tokenizer.tokenize(text))
+        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
         self.examples = []
         block_size = args.max_input_length
         if block_size < 0:

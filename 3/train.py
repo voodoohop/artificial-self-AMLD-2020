@@ -56,17 +56,20 @@ def train():
     # Set seed
     set_seed(args.seed)
 
-    if args.use_huggingface_model:
-        args.model = download_pretrained_model()
-        logger.info(f'Using pre-trained Personachat model {args.model}')
+    model_name = "bert-base-multilingual-cased"
+    # if args.use_huggingface_model:
+    #     args.model = download_pretrained_model()
+    #     logger.info(f'Using pre-trained Personachat model {args.model}')
 
     # Load tokenizer
-    logger.info("Prepare tokenizer, pretrained model and optimizer.")
-    tokenizer_class = GPT2Tokenizer if "gpt2" in args.model else OpenAIGPTTokenizer # cant use Autotokenizer because checkpoint could be a Path
-    tokenizer = tokenizer_class.from_pretrained(args.model)
+    # logger.info("Prepare tokenizer, pretrained model and optimizer.")
+    # tokenizer_class = GPT2Tokenizer if "gpt2" in args.model else OpenAIGPTTokenizer # cant use Autotokenizer because checkpoint could be a Path
+    # tokenizer = tokenizer_class.from_pretrained(args.model)
+    tokenizer = BertTokenizer.from_pretrained(model_name)
     # Load model
-    model_class = GPT2DoubleHeadsModel if "gpt2" in args.model else OpenAIGPTDoubleHeadsModel
-    model = model_class.from_pretrained(args.model)
+    # model_class = GPT2DoubleHeadsModel if "gpt2" in args.model else OpenAIGPTDoubleHeadsModel
+    # model = model_class.from_pretrained(args.model)
+    model = TFBertModel.from_pretrained(model_name)
     model.to(args.device)
     # Add special tokens if they are not already added
     add_special_tokens_(model, tokenizer)
