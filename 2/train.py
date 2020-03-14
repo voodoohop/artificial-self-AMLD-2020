@@ -227,7 +227,7 @@ def train():
             inputs, labels = (batch, batch)
             inputs = inputs.to(args.device)
             labels = labels.to(args.device)
-            loss, *_ = model(inputs, masked_lm_labels=labels)
+            loss, *_ = model(inputs, lm_labels=labels)
             loss.backward()
             tr_loss = loss.item()
             av_loss = (step * av_loss + tr_loss) / (step + 1)
