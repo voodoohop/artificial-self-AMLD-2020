@@ -76,11 +76,15 @@ def generate_input_task2(
                 if prev_sender_tag is None:
                     # beginning of chat with person
                     prev_sender_tag = sender_tag
-                    current_messages = [remove_control_characters(row.text)]
+                    msg = remove_control_characters(row.text)
+                    if not msg: print("empty string")
+                    current_messages = [msg]
                     continue
                 if prev_sender_tag == sender_tag:
                     # concatenate/group messages by the same sender
-                    current_messages.append(remove_control_characters(row.text))
+                    msg = remove_control_characters(row.text)
+                    if not msg: print("empty string")
+                    current_messages.append(msg)
                 else:
                     # dump previous messsages
                     output += "{} {}\n".format(
@@ -91,8 +95,6 @@ def generate_input_task2(
                     prev_sender_tag = sender_tag
                     current_messages = [remove_control_characters(row.text)]
             if len(current_messages) > 0:
-                if not current_messages[0]:
-                    print("empty string")
                 output += "{} {}\n".format(prev_sender_tag, " ".join(current_messages))
                 num_interactions += 1
     # write output data
