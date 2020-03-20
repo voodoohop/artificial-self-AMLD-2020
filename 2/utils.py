@@ -86,14 +86,16 @@ def generate_input_task2(
                     if not msg: print("empty string")
                     current_messages.append(msg)
                 else:
-                    # dump previous messsages
-                    output += "{} {}\n".format(
-                        prev_sender_tag, " ".join(current_messages)
-                    )
-                    num_interactions += 1
-                    # new response by other
-                    prev_sender_tag = sender_tag
-                    current_messages = [remove_control_characters(row.text)]
+                    current_msg = " ".join(current_messages)
+                    if current_msg:
+                        # dump previous messsages
+                        output += "{} {}\n".format(
+                            prev_sender_tag, current_msg
+                        )
+                        num_interactions += 1
+                        # new response by other
+                        prev_sender_tag = sender_tag
+                        current_messages = [remove_control_characters(row.text)]
             if len(current_messages) > 0:
                 output += "{} {}\n".format(prev_sender_tag, " ".join(current_messages))
                 num_interactions += 1
