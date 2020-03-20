@@ -77,13 +77,11 @@ def generate_input_task2(
                     # beginning of chat with person
                     prev_sender_tag = sender_tag
                     msg = remove_control_characters(row.text)
-                    if not msg: print("empty string")
                     current_messages = [msg]
                     continue
                 if prev_sender_tag == sender_tag:
                     # concatenate/group messages by the same sender
                     msg = remove_control_characters(row.text)
-                    if not msg: print("empty string")
                     current_messages.append(msg)
                 else:
                     current_msg = " ".join(current_messages)
