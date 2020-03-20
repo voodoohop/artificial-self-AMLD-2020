@@ -91,6 +91,8 @@ def generate_input_task2(
                     prev_sender_tag = sender_tag
                     current_messages = [remove_control_characters(row.text)]
             if len(current_messages) > 0:
+                if not current_messages[0]:
+                    print("empty string")
                 output += "{} {}\n".format(prev_sender_tag, " ".join(current_messages))
                 num_interactions += 1
     # write output data

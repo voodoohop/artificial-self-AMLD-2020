@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm, trange
 from transformers import (
-    AdamW, 
+    AdamW,
     OpenAIGPTDoubleHeadsModel,
     OpenAIGPTTokenizer,
     GPT2DoubleHeadsModel,
@@ -14,6 +14,7 @@ from transformers import (
     get_linear_schedule_with_warmup,
 )
 from utils import get_input_task3, add_special_tokens_, set_seed, download_pretrained_model
+import transformers as tr
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)-5.5s] [%(name)-12.12s]: %(message)s')
@@ -22,35 +23,45 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)-5.5s]
 def get_data_loader(args, tokenizer, use_cache=True):
     """ Prepare the dataset for training and evaluation """
     # get dataset of tensors
-    data = get_input_task3(args.data_path, tokenizer, max_input_length=args.max_input_length, num_candidates=args.num_candidates, seed=args.seed, max_history=args.max_history, use_cache=use_cache)
+    data = get_input_task3(args.data_path, tokenizer, max_input_length=args.max_input_length,
+                           num_candidates=args.num_candidates, seed=args.seed, max_history=args.max_history,
+                           use_cache=use_cache)
     logger.info("Building training data loader")
     train_dataset = TensorDataset(*data)
     train_loader = DataLoader(train_dataset, batch_size=args.train_batch_size, shuffle=True)
-    logger.info("Train dataset input shape: (Batch size, Candidates, Seq length): {}".format(train_dataset.tensors[0].shape))
+    logger.info(
+        "Train dataset input shape: (Batch size, Candidates, Seq length): {}".format(train_dataset.tensors[0].shape))
     return train_loader
+
 
 def train():
     parser = ArgumentParser()
-    parser.add_argument("--data_path", type=str, default=None, help="Path to conversational data (by default will look for single file in ./data)")
+    parser.add_argument("--data_path", type=str, default=None,
+                        help="Path to conversational data (by default will look for single file in ./data)")
     parser.add_argument("--run_name", type=str, default='run1', help="The name of the run (subdirectory in ./runs)")
-    parser.add_argument("--model", type=str, default="openai-gpt", help="Initialize model from path to checkpoint or with model name (openai-gpt/openai-gpt2)")
+    parser.add_argument("--model", type=str, default="openai-gpt",
+                        help="Initialize model from path to checkpoint or with model name (openai-gpt/openai-gpt2)")
     parser.add_argument("--save_every", type=int, default=100, help="Save checkpoint every n updates steps.")
     parser.add_argument("--num_candidates", type=int, default=2, help="Number of candidates for training")
     parser.add_argument("--max_history", type=int, default=2, help="Number of previous exchanges to keep in history")
-    parser.add_argument("--max_input_length", type=int, default=200, help="Number of tokens which will be fed into the model (reduce this number if you have memory constraints)")
+    parser.add_argument("--max_input_length", type=int, default=200,
+                        help="Number of tokens which will be fed into the model (reduce this number if you have memory constraints)")
     parser.add_argument("--weight_decay", default=0.0, type=float, help="Weight decay if we apply some.")
     parser.add_argument("--train_batch_size", type=int, default=4, help="Batch size for training")
-    parser.add_argument("--gradient_accumulation_steps", type=int, default=8, help="Accumulate gradients on several steps")
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=8,
+                        help="Accumulate gradients on several steps")
     parser.add_argument("--lr", type=float, default=6.25e-5, help="Learning rate")
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
     parser.add_argument("--lm_coef", type=float, default=1.0, help="LM loss coefficient")
     parser.add_argument("--mc_coef", type=float, default=1.0, help="Multiple-choice loss coefficient")
     parser.add_argument("--max_norm", type=float, default=1.0, help="Clipping gradient norm")
     parser.add_argument("--n_epochs", type=int, default=3, help="Number of training epochs")
-    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Device (cuda or cpu)")
+    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu",
+                        help="Device (cuda or cpu)")
     parser.add_argument("--warmup_steps", default=0, type=int, help="Linear warmup over warmup_steps.")
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
-    parser.add_argument("--use_huggingface_model", action='store_true', help="Start training from pre-trained model by Huggingface")
+    parser.add_argument("--use_huggingface_model", action='store_true',
+                        help="Start training from pre-trained model by Huggingface")
     args = parser.parse_args()
 
     # Set seed
@@ -65,11 +76,11 @@ def train():
     # logger.info("Prepare tokenizer, pretrained model and optimizer.")
     # tokenizer_class = GPT2Tokenizer if "gpt2" in args.model else OpenAIGPTTokenizer # cant use Autotokenizer because checkpoint could be a Path
     # tokenizer = tokenizer_class.from_pretrained(args.model)
-    tokenizer = BertTokenizer.from_pretrained(model_name)
     # Load model
     # model_class = GPT2DoubleHeadsModel if "gpt2" in args.model else OpenAIGPTDoubleHeadsModel
     # model = model_class.from_pretrained(args.model)
-    model = TFBertModel.from_pretrained(model_name)
+    tokenizer = tr.AutoTokenizer.from_pretrained(args.model)
+    model = tr.AutoModelWithLMHead.from_pretrained(args.model)
     model.to(args.device)
     # Add special tokens if they are not already added
     add_special_tokens_(model, tokenizer)
@@ -117,7 +128,7 @@ def train():
     epoch_pbar = trange(epochs_trained, int(args.n_epochs))
     av_loss = 0
     for current_epoch in epoch_pbar:
-        epoch_pbar.set_description(f"Epoch [{current_epoch+1}/{args.n_epochs}]")
+        epoch_pbar.set_description(f"Epoch [{current_epoch + 1}/{args.n_epochs}]")
         pbar = tqdm(train_loader)
         for step, batch in enumerate(pbar):
             # Skip past any already trained steps if resuming training
@@ -127,12 +138,13 @@ def train():
             model.train()
             batch = tuple(input_tensor.to(args.device) for input_tensor in batch)
             input_ids, mc_token_ids, lm_labels, mc_labels, token_type_ids = batch
-            (lm_loss), (mc_loss), *_ = model(input_ids, token_type_ids=token_type_ids, mc_token_ids=mc_token_ids, mc_labels=mc_labels, lm_labels=lm_labels)
+            (lm_loss), (mc_loss), *_ = model(input_ids, token_type_ids=token_type_ids, mc_token_ids=mc_token_ids,
+                                             mc_labels=mc_labels, lm_labels=lm_labels)
             loss = (lm_loss * args.lm_coef + mc_loss * args.mc_coef) / args.gradient_accumulation_steps
             loss.backward()
             tr_loss = loss.item()
             # caclulate exponential moving average
-            av_loss = (step*av_loss + loss)/(step + 1)
+            av_loss = (step * av_loss + loss) / (step + 1)
             pbar.set_description(f"Average loss: {av_loss:.4f}")
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_norm)
             if (step + 1) % args.gradient_accumulation_steps == 0:
@@ -161,6 +173,7 @@ def train():
     tokenizer.save_pretrained(output_dir)
     # Good practice: save your training arguments together with the trained model
     torch.save(args, os.path.join(output_dir, "training_args.bin"))
+
 
 if __name__ == "__main__":
     train()
