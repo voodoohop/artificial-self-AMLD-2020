@@ -84,7 +84,7 @@ def generate_input_task2(
                     msg = remove_control_characters(row.text)
                     current_messages.append(msg)
                 else:
-                    current_msg = " ".join(current_messages)
+                    current_msg = " ".join(current_messages).strip()
                     if current_msg:
                         # dump previous messsages
                         output += "{} {}\n".format(
@@ -95,7 +95,7 @@ def generate_input_task2(
                         prev_sender_tag = sender_tag
                         current_messages = [remove_control_characters(row.text)]
             if len(current_messages) > 0:
-                output += "{} {}\n".format(prev_sender_tag, " ".join(current_messages))
+                output += "{} {}\n".format(prev_sender_tag, " ".join(current_messages).strip())
                 num_interactions += 1
     # write output data
     logger.info(
