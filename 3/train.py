@@ -79,8 +79,8 @@ def train():
     # Load model
     # model_class = GPT2DoubleHeadsModel if "gpt2" in args.model else OpenAIGPTDoubleHeadsModel
     # model = model_class.from_pretrained(args.model)
-    tokenizer = tr.AutoTokenizer.from_pretrained(args.model)
-    model = tr.AutoModelWithLMHead.from_pretrained(args.model)
+    tokenizer = tr.GPT2Tokenizer.from_pretrained(args.model)
+    model = tr.GPT2DoubleHeadsModel.from_pretrained(args.model)
     model.to(args.device)
     # Add special tokens if they are not already added
     add_special_tokens_(model, tokenizer)
