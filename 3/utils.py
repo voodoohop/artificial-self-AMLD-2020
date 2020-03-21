@@ -117,6 +117,7 @@ def get_grouped_conversation_data(
     logger.info(f"Creating grouped conversation data...")
     # read conversational data
     df = read_conversation_data(data_path)
+    df = df[df.text != ""]
     # generate conversations
     new_conversation_delay_hours = 24
     data = defaultdict(list)
@@ -155,7 +156,7 @@ def get_grouped_conversation_data(
                 else:
                     # dump previous messsages
                     prevSenderType = (
-                        "person2" if row.outgoing else "person1"
+                        "person1" if row.outgoing else "person2"
                     )  # if current is outgoing previous was person 2
                     conversation.append(
                         {
@@ -332,13 +333,11 @@ def build_input_from_segments(
         [speaker2 if (len(sequence) - i) % 2 else speaker1] + s
         for i, s in enumerate(sequence[1:])
     ]
-    instance = {}
-    # Input IDs consists of all inputs concatenated
-    instance["input_ids"] = list(itertools.chain(*sequence))
-    # Input types (which portions belong to speaker1 and speaker2)
-    instance["token_type_ids"] = [
+    instance = {"input_ids": list(itertools.chain(*sequence)), "token_type_ids": [
         speaker2 if i % 2 else speaker1 for i, s in enumerate(sequence) for _ in s
-    ]
+    ]}
+    # Input IDs consists of all inputs concatenated
+    # Input types (which portions belong to speaker1 and speaker2)
     # Index of the classification token in each input sequence.
     instance["mc_token_ids"] = len(instance["input_ids"]) - 1
     # Which positions to use for language modelling (-1 is ignored)
