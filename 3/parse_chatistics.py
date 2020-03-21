@@ -5,7 +5,7 @@ from utils import read_conversation_data
 
 def main(data_path, out_path):
     df = read_conversation_data(data_path)
-    df.dropna()
+    df = df.mask(df.eq('None')).dropna()
     df = df[df.text != ""]
     with open(out_path, "w") as f:
         for i, col in df.iterrows():

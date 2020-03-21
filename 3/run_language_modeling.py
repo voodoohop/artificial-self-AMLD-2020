@@ -708,6 +708,11 @@ def main():
         help="Optional pretrained tokenizer name or path if not the same as model_name_or_path. If both are None, initialize a new tokenizer.",
     )
     parser.add_argument(
+        "--train_tokenizer",
+        action="store_true",
+        help="Train a new tokenizer.",
+    )
+    parser.add_argument(
         "--cache_dir",
         default=None,
         type=str,
@@ -938,6 +943,17 @@ def main():
     else:
         config = config_class()
 
+    if args.train_tokenizer:
+        # Initialize a tokenizer
+        tokenizer = ByteLevelBPETokenizer()
+        # Customize training
+        tokenizer.train(
+            files=[args.train_data_file],
+            vocab_size=52000,
+            min_frequency=2,
+            special_tokens=["<|endoftext|>"],
+        )
+        tokenizer.save(args.tokenizer_name)
     if args.tokenizer_name:
         tokenizer = tokenizer_class.from_pretrained(
             args.tokenizer_name, cache_dir=args.cache_dir
@@ -945,16 +961,6 @@ def main():
     elif args.model_name_or_path:
         tokenizer = tokenizer_class.from_pretrained(
             args.model_name_or_path, cache_dir=args.cache_dir
-        )
-    elif args.model_type == "gpt2":
-        # Initialize a tokenizer
-        tokenizer = ByteLevelBPETokenizer()
-        # Customize training
-        tokenizer.train(
-            files=[args.train_dataset],
-            vocab_size=52000,
-            min_frequency=2,
-            special_tokens=["<|endoftext|>"],
         )
     else:
         raise ValueError(
