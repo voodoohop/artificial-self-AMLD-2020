@@ -5,7 +5,7 @@ from utils import read_conversation_data
 
 def main(data_path, out_path):
     df = read_conversation_data(data_path)
-    df = df[df.text != "" or df.text is not None]
+    df = df[all(df.text != "" or df.text is not None)]
     with open(out_path, "w") as f:
         for i, col in df.iterrows():
             f.write(col["text"].strip() + "\t")
