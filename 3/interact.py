@@ -116,12 +116,6 @@ def run():
         help="The name of the run (subdirectory in ./runs)",
     )
     parser.add_argument(
-        "--model",
-        type=str,
-        default="openai-gpt",
-        help="Model type (openai-gpt or gpt2)",
-    )  # anything besides gpt2 will load openai-gpt
-    parser.add_argument(
         "--max_history",
         type=int,
         default=2,
