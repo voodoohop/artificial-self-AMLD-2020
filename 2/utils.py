@@ -55,6 +55,8 @@ def generate_input_task2(
     """Generate input data for task 2"""
     # read conversation data
     df = read_conversation_data(data_path)
+    df = df.mask(df.eq('None')).dropna()
+    df = df[df.text != ""]
     # group messages by sender and generate output text file
     min_num_interactions_per_conversation = 10
     num_interactions = 0
