@@ -117,6 +117,7 @@ def get_grouped_conversation_data(
     logger.info(f"Creating grouped conversation data...")
     # read conversational data
     df = read_conversation_data(data_path)
+    df = df.mask(df.eq('None')).dropna()
     df = df[df.text != ""]
     # generate conversations
     new_conversation_delay_hours = 24
