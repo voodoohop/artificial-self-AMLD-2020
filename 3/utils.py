@@ -186,7 +186,7 @@ def get_input_task3(
     tokenizer,
     max_input_length=200,
     num_candidates=2,
-    seed=42,
+    seed=45,
     max_history=2,
     use_cache=True,
 ):

@@ -1,4 +1,4 @@
-runs
-*.pkl
-grouped_conversation_data.json
-secrets
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

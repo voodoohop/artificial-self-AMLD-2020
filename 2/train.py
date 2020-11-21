@@ -148,10 +148,22 @@ def train():
     # tokenizer_class = (
     #     GPT2Tokenizer if "gpt2" in args.model else OpenAIGPTTokenizer
     # )  # cant use Autotokenizer because checkpoint could be a Path
-    tokenizer = tr.AutoTokenizer.from_pretrained(args.model)
-    # Load model
-    # model_class = GPT2LMHeadModel if "gpt2" in args.model else OpenAIGPTLMHeadModel
-    model = tr.AutoModelWithLMHead.from_pretrained(args.model)
+    #tokenizer = tr.AutoTokenizer.from_pretrained(args.model)
+
+    if args.model == "gpt2":
+        tokenizer_class, model_class = GPT2Tokenizer, GPT2LMHeadModel
+    elif args.model == "distilbert-base-multilingual-cased":
+        tokenizer_class, model_class = tr.DistilBertTokenizer, tr.DistilBertForMaskedLM
+    elif args.model == "bert-base-multilingual-cased":
+        tokenizer_class, model_class = tr.DistilBertTokenizer, tr.BertForMaskedLM
+    else:
+        tokenizer_class, model_class = OpenAIGPTTokenizer, OpenAIGPTLMHeadModel
+
+
+    model_path = os.path.join("runs", args.run_name)
+    tokenizer = tokenizer_class.from_pretrained(model_path)
+    model = model_class.from_pretrained(model_path)
+    
     model.to(args.device)
     # Add special tokens if they are not already added
     add_special_tokens_(model, tokenizer)
@@ -238,27 +250,27 @@ def train():
                 scheduler.step()  # Update learning rate schedule
                 model.zero_grad()
                 global_step += 1
-                if global_step % args.save_every == 0 and global_step > 0:
-                    checkpoint_prefix = "checkpoint"
-                    output_dir = os.path.join(
-                        "runs",
-                        args.run_name,
-                        "{}-{}".format(checkpoint_prefix, global_step),
-                    )
-                    if not os.path.exists(output_dir):
-                        os.makedirs(output_dir)
-                    logger.info(f"Saving model checkpoint to {output_dir}")
-                    model.save_pretrained(output_dir)
-                    tokenizer.save_pretrained(output_dir)
-                    logger.info(
-                        f"Saving optimizer and scheduler states to {output_dir}"
-                    )
-                    torch.save(
-                        optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt")
-                    )
-                    torch.save(
-                        scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt")
-                    )
+                # if global_step % args.save_every == 0 and global_step > 0:
+                #     checkpoint_prefix = "checkpoint"
+                #     output_dir = os.path.join(
+                #         "runs",
+                #         args.run_name,
+                #         "{}-{}".format(checkpoint_prefix, global_step),
+                #     )
+                #     if not os.path.exists(output_dir):
+                #         os.makedirs(output_dir)
+                #     logger.info(f"Saving model checkpoint to {output_dir}")
+                #     model.save_pretrained(output_dir)
+                #     tokenizer.save_pretrained(output_dir)
+                #     logger.info(
+                #         f"Saving optimizer and scheduler states to {output_dir}"
+                #     )
+                #     torch.save(
+                #         optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt")
+                #     )
+                #     torch.save(
+                #         scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt")
+                #     )
 
     # save model
     output_dir = os.path.join("runs", args.run_name)

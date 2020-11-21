@@ -12,6 +12,8 @@ from transformers import (
     GPT2DoubleHeadsModel,
     GPT2Tokenizer,
     get_linear_schedule_with_warmup,
+    GPT2LMHeadModel,
+    OpenAIGPTLMHeadModel
 )
 from utils import (
     get_input_task3,
@@ -157,6 +159,17 @@ def train():
         args.model = download_pretrained_model()
         logger.info(f'Using pre-trained Personachat model {args.model}')
 
+    # if args.model == "gpt2":
+    #     tokenizer_class, model_class = GPT2Tokenizer, GPT2DoubleHeadsModel
+    # elif args.model == "distilbert-base-multilingual-cased":
+    #     tokenizer_class, model_class = tr.DistilBertTokenizer, tr.DistilBertForMaskedLM
+    # elif args.model == "bert-base-multilingual-cased":
+    #     tokenizer_class, model_class = tr.DistilBertTokenizer, tr.BertForMaskedLM
+    # else:
+    #     tokenizer_class, model_class = OpenAIGPTTokenizer, OpenAIGPTLMHeadModel
+    # model_path = os.path.join("runs", args.run_name)
+    # tokenizer = tokenizer_class.from_pretrained(args.model)
+    # model = model_class.from_pretrained(args.model)
     tokenizer = tr.GPT2Tokenizer.from_pretrained(args.model)
     model = tr.GPT2DoubleHeadsModel.from_pretrained(args.model)
     model.to(args.device)
@@ -256,27 +269,27 @@ def train():
                 scheduler.step()  # Update learning rate schedule
                 model.zero_grad()
                 global_step += 1
-                if global_step % args.save_every == 0 and global_step > 0:
-                    checkpoint_prefix = "checkpoint"
-                    output_dir = os.path.join(
-                        "runs",
-                        args.run_name,
-                        "{}-{}".format(checkpoint_prefix, global_step),
-                    )
-                    if not os.path.exists(output_dir):
-                        os.makedirs(output_dir)
-                    logger.info(f"Saving model checkpoint to {output_dir}")
-                    model.save_pretrained(output_dir)
-                    tokenizer.save_pretrained(output_dir)
-                    logger.info(
-                        f"Saving optimizer and scheduler states to {output_dir}"
-                    )
-                    torch.save(
-                        optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt")
-                    )
-                    torch.save(
-                        scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt")
-                    )
+                # if global_step % args.save_every == 0 and global_step > 0:
+                #     checkpoint_prefix = "checkpoint"
+                #     output_dir = os.path.join(
+                #         "runs",
+                #         args.run_name,
+                #         "{}-{}".format(checkpoint_prefix, global_step),
+                #     )
+                #     if not os.path.exists(output_dir):
+                #         os.makedirs(output_dir)
+                #     logger.info(f"Saving model checkpoint to {output_dir}")
+                #     model.save_pretrained(output_dir)
+                #     tokenizer.save_pretrained(output_dir)
+                #     logger.info(
+                #         f"Saving optimizer and scheduler states to {output_dir}"
+                #     )
+                #     torch.save(
+                #         optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt")
+                #     )
+                #     torch.save(
+                #         scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt")
+                #     )
 
     # save model
     output_dir = os.path.join("runs", args.run_name)
